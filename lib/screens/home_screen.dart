@@ -13,11 +13,20 @@ class HomeScreenState extends State<HomeScreen> {
   final ApiService _apiService = ApiService();
   String _activity = "Tap below to discover an activity!";
   String _price = "";
-  List<Map<String, String>> _history = [];
+  final List<Map<String, String>> _history = [];
+
+  List<String> activityTypes = [
+    "education",
+    "recreational",
+    "social",
+    "diy",
+    "charity",
+  ];
+  String? _selectedType;
 
   void _fetchActivity() async {
     try {
-      final data = await _apiService.fetchRandomActivity();
+      final data = await _apiService.fetchRandomActivity(type: _selectedType);
       setState(() {
         _activity = data['activity'];
         _price = "Price: \$${data['price']}";
@@ -56,29 +65,55 @@ class HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 8),
 
             /// Price Text
-            Text(
-              _price,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            Text(_price, style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 30),
 
-            /// Buttons inside a Column for proper spacing
+            /// Dropdown and Buttons inside Column for better alignment
             Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                /// Activity Type Dropdown
+                DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                  hint: const Text("Select Activity Type"),
+                  value: _selectedType,
+                  items: activityTypes.map((String type) {
+                    return DropdownMenuItem<String>(
+                      value: type,
+                      child: Text(type),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedType = newValue;
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                /// Next Button
                 ElevatedButton(
                   onPressed: _fetchActivity,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.teal,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: const Text("Next", style: TextStyle(fontSize: 18)),
                 ),
                 const SizedBox(height: 16),
 
-                /// History Button with Proper Spacing
+                /// History Button
                 OutlinedButton(
                   onPressed: () {
                     Navigator.push(
@@ -92,9 +127,14 @@ class HomeScreenState extends State<HomeScreen> {
                     foregroundColor: Colors.teal,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     side: const BorderSide(color: Colors.teal, width: 2),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: const Text("View History", style: TextStyle(fontSize: 18)),
+                  child: const Text(
+                    "View History",
+                    style: TextStyle(fontSize: 18),
+                  ),
                 ),
               ],
             ),
