@@ -12,7 +12,17 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Test Activity App',
+      title: 'Activity App',
+      theme: ThemeData(
+        colorScheme: ColorScheme.light(
+          primary: Colors.teal,
+          secondary: Colors.amberAccent,
+        ),
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          bodyMedium: TextStyle(fontSize: 16, color: Colors.black54),
+        ),
+      ),
       home: const HomeScreen(),
     );
   }
