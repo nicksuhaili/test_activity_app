@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import 'history_screen.dart';
 
@@ -33,12 +36,20 @@ class HomeScreenState extends State<HomeScreen> {
         _history.insert(0, {"activity": _activity, "price": _price});
         if (_history.length > 50) _history.removeLast();
       });
+
+      _saveData();
     } catch (e) {
       setState(() {
         _activity = "Oops! Something went wrong.";
         _price = "";
       });
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
   }
 
   @override
@@ -56,7 +67,6 @@ class HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            /// Activity Text
             Text(
               _activity,
               style: Theme.of(context).textTheme.bodyLarge,
@@ -64,31 +74,32 @@ class HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 8),
 
-            /// Price Text
             Text(_price, style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 30),
 
-            /// Dropdown and Buttons inside Column for better alignment
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                /// Activity Type Dropdown
                 DropdownButtonFormField<String>(
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                   ),
                   hint: const Text("Select Activity Type"),
                   value: _selectedType,
-                  items: activityTypes.map((String type) {
-                    return DropdownMenuItem<String>(
-                      value: type,
-                      child: Text(type),
-                    );
-                  }).toList(),
+                  items:
+                      activityTypes.map((String type) {
+                        return DropdownMenuItem<String>(
+                          value: type,
+                          child: Text(type),
+                        );
+                      }).toList(),
                   onChanged: (String? newValue) {
                     setState(() {
                       _selectedType = newValue;
@@ -98,7 +109,6 @@ class HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 16),
 
-                /// Next Button
                 ElevatedButton(
                   onPressed: _fetchActivity,
                   style: ElevatedButton.styleFrom(
@@ -113,7 +123,6 @@ class HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                /// History Button
                 OutlinedButton(
                   onPressed: () {
                     Navigator.push(
@@ -142,5 +151,25 @@ class HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  void _saveData() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('selectedType', _selectedType ?? '');
+    prefs.setString('history', json.encode(_history));
+  }
+
+  void _loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _selectedType = prefs.getString('selectedType') ?? '';
+      String? historyData = prefs.getString('history');
+      if (historyData != null) {
+        _history.clear();
+        _history.addAll(
+          List<Map<String, String>>.from(json.decode(historyData)),
+        );
+      }
+    });
   }
 }
